@@ -29,5 +29,5 @@ project.ext {
     mavRemoteRepoPassword = localProperties.getProperty('JFROG_PASSWORD')
 }
 
-apply from: './../maven/gradle-mavenizer.gradle'
-//apply from: 'http://raw.githubusercontent.com/DavidBearEnglish/gradle-maven-plugin/master/gradle-mavenizer.gradle'
+def gradlePluginVersion = project.hasProperty('mavPluginVersion') ? project.mavPluginVersion : 'master'
+apply from: "http://raw.githubusercontent.com/DavidBearEnglish/gradle-maven-plugin/${gradlePluginVersion}/gradle-mavenizer.gradle"
