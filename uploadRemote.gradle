@@ -1,0 +1,33 @@
+Properties localProperties = new Properties()
+localProperties.load(project.rootProject.file('./local.properties').newDataInputStream())
+
+// 远程仓库地址（release or snapshot）
+String remoteRepo = REMOTE_REPO_SNAPSHOT_URL
+if (localProperties.getProperty('UPLOAD_JFROG_CHANNEL') == 'release') {
+    remoteRepo = REMOTE_REPO_URL
+}
+
+String projectVersion = project.property('LIBRARY_VERSION')
+if (localProperties.getProperty('UPLOAD_JFROG_CHANNEL') != 'release') {
+    projectVersion = projectVersion + '-SNAPSHOT'
+}
+
+version = projectVersion // 设置版本
+group = GROUP_ID // 设置group id
+String developerID = project.property('DEVELOPER_ID')
+
+project.ext {
+    // generate config
+    mavDevelopers = [(developerID) : project.property('DEVELOPER_NAME')] // id : name
+    mavProjectName = project.property('ARTIFACTID')
+    mavLibraryLicenses = ["Apache-2.0":'http://www.apache.org/licenses/LICENSE-2.0.txt'] // name : url
+    mavVersion = projectVersion
+    // remote repo config
+    mavPublishToRemoteRepo = true
+    mavRepoRemoteUrl = remoteRepo
+    mavRemoteRepoUser = localProperties.getProperty('JFROG_USERNAME')
+    mavRemoteRepoPassword = localProperties.getProperty('JFROG_PASSWORD')
+}
+
+apply from: './../maven/gradle-mavenizer.gradle'
+//apply from: 'http://raw.githubusercontent.com/DavidBearEnglish/gradle-maven-plugin/master/gradle-mavenizer.gradle'

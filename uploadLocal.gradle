@@ -1,0 +1,24 @@
+apply plugin: 'maven'
+
+uploadArchives {
+    boolean localExist = project.hasProperty('LOCAL_REPO_URL')
+    String localMavenUrl = null
+    if (localExist) {
+        localMavenUrl = "${LOCAL_REPO_URL}"
+    }
+    if (!localMavenUrl) {
+        String userHomePath = System.getProperty("user.home")
+        localMavenUrl = "file://" + userHomePath + "/localMaven/mobile-cbb"
+    }
+    File localDir = file(localMavenUrl)
+    if (!localDir.exists()) {
+        mkdir(localMavenUrl)
+    }
+
+    repositories.mavenDeployer {
+        repository(url: localMavenUrl)
+        pom.groupId = GROUP_ID
+        pom.artifactId = project.property('ARTIFACTID')
+        pom.version = project.property('LIBRARY_VERSION') + '-SNAPSHOT'
+    }
+}

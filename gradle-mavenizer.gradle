@@ -9,7 +9,10 @@ project.afterEvaluate {
     publishing {
         publications {
             mavenPublish(MavenPublication) {
-                if (isAndroidProject()) {
+                if (project.ext.mavProjectName) {
+                    artifactId project.ext.mavProjectName
+                }                 
+                if (isAndroidProject()) {                   
                     artifact bundleReleaseAar
                     artifact androidJavadocsJar
                     artifact androidSourcesJar
