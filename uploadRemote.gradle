@@ -1,25 +1,51 @@
+DataInputStream configInputStream = file("${project.getParent().projectDir}/upload.config").newDataInputStream()
+DataInputStream localInputStream = file("${project.getParent().projectDir}/local.properties").newDataInputStream()
+
+Properties configProperties = new Properties()
+configProperties.load(configInputStream)
+
 Properties localProperties = new Properties()
-localProperties.load(project.rootProject.file('./local.properties').newDataInputStream())
+localProperties.load(localInputStream)
 
 // 远程仓库地址（release or snapshot）
-String remoteRepo = REMOTE_REPO_SNAPSHOT_URL
-if (localProperties.getProperty('UPLOAD_JFROG_CHANNEL') == 'release') {
-    remoteRepo = REMOTE_REPO_URL
+String remoteRepo = configProperties.getProperty('REMOTE_REPO_SNAPSHOT_URL')
+if (configProperties.getProperty('UPLOAD_JFROG_CHANNEL') == 'release') {
+    remoteRepo = configProperties.getProperty('REMOTE_REPO_URL')
 }
 
+// 设置 CBB 版本
 String projectVersion = project.property('LIBRARY_VERSION')
-if (localProperties.getProperty('UPLOAD_JFROG_CHANNEL') != 'release') {
+if (configProperties.getProperty('UPLOAD_JFROG_CHANNEL') != 'release') {
     projectVersion = projectVersion + '-SNAPSHOT'
 }
+version = projectVersion
 
-version = projectVersion // 设置版本
-group = GROUP_ID // 设置group id
-String developerID = project.property('DEVELOPER_ID')
+// 设置 CBB GroupID
+String groupID = configProperties.getProperty('GROUP_ID')
+if (groupID == null) {
+    groupID = 'com.seewo.unknow'
+}
+group = groupID
+System.out.println('group is - ' + group)
+
+// 开发者信息 - 开发者 ID
+String developerID = configProperties.getProperty('DEVELOPER_ID')
+if (developerID == null) {
+    developerID = 'Unknow-DID'
+}
+System.out.println('developerID is - ' + developerID)
+
+// 开发者信息 - 开发者名称
+String developerName = configProperties.getProperty('DEVELOPER_NAME')
+if (developerName == null) {
+    developerName = 'Unknow-DIN'
+}
+System.out.println('developerName is - ' + developerName)
 
 project.ext {
     // generate config
-    mavDevelopers = [(developerID) : project.property('DEVELOPER_NAME')] // id : name
-    mavProjectName = project.property('ARTIFACTID')
+    mavDevelopers = [(developerID) : developerName] // id : name
+    mavProjectName = project.property('ARTIFACT_ID')
     mavLibraryLicenses = ["Apache-2.0":'http://www.apache.org/licenses/LICENSE-2.0.txt'] // name : url
     mavVersion = projectVersion
     // remote repo config
@@ -29,5 +55,9 @@ project.ext {
     mavRemoteRepoPassword = localProperties.getProperty('JFROG_PASSWORD')
 }
 
-def gradlePluginVersion = project.hasProperty('mavPluginVersion') ? project.mavPluginVersion : 'master'
-apply from: "http://raw.githubusercontent.com/DavidBearEnglish/gradle-maven-plugin/${gradlePluginVersion}/gradle-mavenizer.gradle"
+configInputStream.close()
+localInputStream.close()
+
+def uploadScriptRootPath = gradle.ext.TEMP_UPLOAD_SCRIPT_ROOT_PATH
+apply from: uploadScriptRootPath + "gradle-mavenizer.gradle"
+

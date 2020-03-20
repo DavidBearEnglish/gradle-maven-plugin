@@ -1,5 +1,9 @@
 apply plugin: 'maven'
 
+DataInputStream configInputStream = file("${project.getParent().projectDir}/upload.config").newDataInputStream()
+Properties configProperties = new Properties()
+configProperties.load(configInputStream)
+
 uploadArchives {
     boolean localExist = project.hasProperty('LOCAL_REPO_URL')
     String localMavenUrl = null
@@ -17,8 +21,10 @@ uploadArchives {
 
     repositories.mavenDeployer {
         repository(url: localMavenUrl)
-        pom.groupId = GROUP_ID
-        pom.artifactId = project.property('ARTIFACTID')
+        pom.groupId = configProperties.getProperty('GROUP_ID')
+        pom.artifactId = project.property('ARTIFACT_ID')
         pom.version = project.property('LIBRARY_VERSION') + '-SNAPSHOT'
     }
 }
+
+configInputStream.close()

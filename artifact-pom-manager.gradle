@@ -1,6 +1,6 @@
-def gradlePluginVersion = project.hasProperty('mavPluginVersion') ? project.mavPluginVersion : 'master'
-apply from: "http://raw.githubusercontent.com/DavidBearEnglish/gradle-maven-plugin/${gradlePluginVersion}/utils.gradle"
- 
+def uploadScriptRootPath = gradle.ext.TEMP_UPLOAD_SCRIPT_ROOT_PATH
+apply from: uploadScriptRootPath + "utils.gradle"
+
 def decoratePom(pom) {
     pom.name = getStringProperty("mavProjectName")
     pom.description = getStringProperty("mavLibraryDescription")
